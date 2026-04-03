@@ -1,0 +1,6 @@
+set(project_name install_monitor_drv)
+project ("${project_name}")
+add_definitions(-D_KRTL)
+include_directories(${KRTL_ROOT})
+aux_source_directory(. SOURCES)
+wdk_add_driver(${project_name} ${SOURCES} ${KRTL_ROOT}/krtl/new.cc LIBS FltMgr)
