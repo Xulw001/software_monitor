@@ -1,5 +1,6 @@
 #include "reg_monitor.h"
 
+#include "install_monitor.h"
 #include "proc_util.h"
 #include "string_util.h"
 
@@ -35,6 +36,16 @@ static bool GetAbsoluteRegistryPath(PVOID object, rtl::wstring& reg_path) {
     return true;
 }
 
+static void CollectEvent(PREG_POST_OPERATION_INFORMATION info) {
+    if (info->Status == STATUS_SUCCESS && info->Object != nullptr) {
+        rtl::wstring reg_path;
+        if (!GetAbsoluteRegistryPath(info->Object, reg_path)) return;
+        rtl::wstring proc_image_name;
+        if (!GetCurrentProcessImageName(proc_image_name)) return;
+        install::RegistryInstall(proc_image_name, reg_path);
+    }
+}
+
 _IRQL_requires_same_ _Function_class_(EX_CALLBACK_FUNCTION) static NTSTATUS
     NotifyRoutine(PVOID, PVOID arg1, PVOID arg2) {
     auto notify_type = (REG_NOTIFY_CLASS)(ULONG_PTR)arg1;
@@ -42,27 +53,21 @@ _IRQL_requires_same_ _Function_class_(EX_CALLBACK_FUNCTION) static NTSTATUS
         (PREG_POST_OPERATION_INFORMATION)arg2;
     if (info != nullptr) {
         switch (notify_type) {
-            case RegNtPostCreateKeyEx: {
+            case RegNtPostCreateKeyEx:
                 if (info->PreInformation == nullptr ||
                     *((PREG_CREATE_KEY_INFORMATION_V1)info->PreInformation)
                             ->Disposition == REG_OPENED_EXISTING_KEY) {
                     break;
                 }
-            }
-            case RegNtPostSetValueKey:
-            case RegNtPostRenameKey: {
-                if (info->Status == STATUS_SUCCESS && info->Object != nullptr) {
-                    rtl::wstring reg_path;
-                    if (!GetAbsoluteRegistryPath(info->Object, reg_path)) {
-                        break;
-                    }
 
-                    rtl::wstring proc_image_name;
-                    if (!GetCurrentProcessImageName(proc_image_name)) {
-                        break;
-                    }
-                }
-            } break;
+                CollectEvent(info);
+                break;
+            case RegNtPostSetValueKey:
+            case RegNtPostRenameKey:
+                CollectEvent(info);
+                break;
+            default:
+                break;
         }
     }
 

@@ -2,6 +2,7 @@
 
 #include <fltKernel.h>
 
+#include "install_monitor.h"
 #include "proc_util.h"
 #include "string_util.h"
 
@@ -38,6 +39,7 @@ static void NotifyFileCreated(PFLT_CALLBACK_DATA callback) {
             break;
         }
 
+        install::FileInstall(proc_image_name, file_name);
     } while (false);
     if (file_name_info) {
         FltReleaseFileNameInformation(file_name_info);
@@ -79,6 +81,7 @@ static void NotifyFileLink(PFLT_CALLBACK_DATA callback,
             break;
         }
 
+        install::FileInstall(proc_image_name, file_name);
     } while (false);
     if (file_name_info) {
         FltReleaseFileNameInformation(file_name_info);
@@ -109,6 +112,7 @@ static void NotifyFileRenamed(PFLT_CALLBACK_DATA callback,
             break;
         }
 
+        install::FileInstall(proc_image_name, file_name);
     } while (false);
     if (file_name_info) {
         FltReleaseFileNameInformation(file_name_info);
