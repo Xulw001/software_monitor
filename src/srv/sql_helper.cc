@@ -85,7 +85,7 @@ bool SqlHelper::InsertAsset(const std::string& path, const int software_id,
                             int type) {
     try {
         auto stmt = conn_->PrepareStatement(
-            "insert into asset (file, software_id, type) values (?, ?, ?)");
+            "insert or ignore into asset (file, software_id, type) values (?, ?, ?)");
         if (!stmt) {
             LOG_ERR << "prepare statement failed!";
             return false;
