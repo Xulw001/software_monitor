@@ -11,6 +11,10 @@ if(NOT TARGET_DIRECTORY)
     set(TARGET_DIRECTORY ${CMAKE_SOURCE_DIR}/output)
 endif()
 
+if(NOT INSTALL_DIRECTORY)
+    set(INSTALL_DIRECTORY ${CMAKE_SOURCE_DIR}/install)
+endif()
+
 # Set Target Output Path
 set(BIN_OUTPUT_DIR ${TARGET_DIRECTORY}/bin/${ARCH})
 set(LIB_OUTPUT_DIR ${TARGET_DIRECTORY}/lib/${ARCH})
@@ -31,3 +35,8 @@ include(${KRTL_ROOT}/krtl/wdk.cmake)
 wdk_clean_default_options()
 add_subdirectory(src/drv)
 wdk_restore_default_options()
+
+add_subdirectory(src/srv)
+
+install(DIRECTORY lib/x64/ DESTINATION ${INSTALL_DIRECTORY} FILES_MATCHING PATTERN "*.dll")
+install(DIRECTORY ${BIN_OUTPUT_DIR}/ DESTINATION ${INSTALL_DIRECTORY} FILES_MATCHING PATTERN "*.exe" PATTERN "*.sys")
